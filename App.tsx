@@ -31,27 +31,28 @@ const App: React.FC = () => {
             立即打印 / 保存 PDF
           </button>
           <span className="text-[10px] text-gray-400 italic">
-            若预览仍为纵向，请在设置中手动寻找 <b>“方向：横向”</b>
+            提示：点击后请在打印设置中选择 <b>方向：横向 (Landscape)</b>
           </span>
         </div>
       </header>
 
       <main className="flex-1 overflow-x-auto print:overflow-visible">
-        {/* 容器：屏幕预览时 minWidth 1100px，打印时锁定 280mm */}
+        {/* 容器：屏幕预览时 minWidth 1100px */}
         <div className="print-container mx-auto bg-white p-4 md:p-8 shadow-lg border border-gray-200"
              style={{ width: 'fit-content' }}>
           
           <Legend />
 
-          {/* 周期表网格：明确设置高度以防塌陷 */}
-          <div className="grid-layout bg-white border border-black"
+          {/* 周期表网格：明确定义 11 行的分配，防止塌陷 */}
+          <div className="grid-layout bg-white border border-black shadow-sm"
                style={{ 
                  display: 'grid', 
                  gridTemplateColumns: 'repeat(18, minmax(0, 1fr))',
-                 // 11行：1(序号) + 7(主表) + 1(间隙) + 2(底表)
-                 gridTemplateRows: 'repeat(11, auto)',
+                 // 明确行高分配：序号行(auto) + 7行主元素(1fr) + 间隙(1rem) + 2行底表(1fr)
+                 gridTemplateRows: 'auto repeat(7, 1fr) 1.2rem repeat(2, 1fr)',
                  width: '100%',
-                 minWidth: '1050px' 
+                 minWidth: '1050px',
+                 minHeight: '600px' // 屏幕预览时的最小高度
                }}>
             
             {/* Column Indices (Row 1) */}
@@ -72,7 +73,7 @@ const App: React.FC = () => {
             ))}
 
             {/* Gap for Lanthanides/Actinides (Row 9) */}
-            <div style={{ gridRow: 9, gridColumn: '1 / span 18', height: '1.5rem' }}></div>
+            <div style={{ gridRow: 9, gridColumn: '1 / span 18' }}></div>
 
             {/* 镧系/锕系 标签 (Row 10, 11) */}
             <div className="flex flex-col items-end justify-center pr-2 text-right border-r border-gray-300 mr-[0.5px] leading-none gap-0.5" 
@@ -91,24 +92,22 @@ const App: React.FC = () => {
           </div>
 
           <footer className="mt-6 text-center text-[10px] text-gray-400 border-t pt-4 italic">
-            IUPAC Periodic Table of the Elements. Optimized for A4 Landscape.
+            IUPAC Periodic Table of the Elements. Optimized for Professional A4 Landscape Printing.
           </footer>
         </div>
       </main>
 
       <style>{`
-        /* 屏幕显示效果 */
         @media screen {
           .print-container {
             min-width: 1100px;
           }
         }
 
-        /* 打印核心逻辑 */
         @media print {
           @page {
-            size: landscape; /* 移除 A4 字样，增加兼容性，让浏览器重新显示方向开关 */
-            margin: 8mm;
+            size: auto; /* 关键：设置为 auto 允许用户在打印对话框中手动选择“横向” */
+            margin: 5mm;
           }
           
           body {
@@ -121,11 +120,7 @@ const App: React.FC = () => {
             display: none !important;
           }
 
-          main {
-            overflow: visible !important;
-            display: block !important;
-          }
-
+          /* 打印时容器宽度固定为 A4 横向的安全宽度 */
           .print-container {
             width: 280mm !important;
             min-width: 280mm !important;
@@ -133,16 +128,22 @@ const App: React.FC = () => {
             padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            transform: none !important;
+            display: block !important;
           }
 
-          /* 强制表格显示高度 */
+          /* 强制网格在打印时获得充足的高度，防止坍塌 */
           .grid-layout {
             display: grid !important;
-            min-height: 180mm !important; /* 强制网格拥有高度 */
+            min-height: 175mm !important; /* 核心修复：强制撑开网格 */
+            width: 100% !important;
           }
           
-          /* 防止跨页断裂 */
+          /* 确保每个格子在打印时有最小高度感 */
+          .grid-layout > div {
+            min-height: 1.5rem;
+          }
+
+          /* 避免浏览器分页截断 */
           .print-container, .grid-layout {
             page-break-inside: avoid;
             break-inside: avoid;
