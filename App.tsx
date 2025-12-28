@@ -5,10 +5,7 @@ import ElementCell from './components/ElementCell';
 import Legend from './components/Legend';
 
 const App: React.FC = () => {
-  // 使用 useCallback 确保函数稳定
   const handlePrint = useCallback(() => {
-    // 触发系统打印
-    // 注意：在 iframe 沙盒环境下可能被浏览器拦截，此时建议用户使用 Ctrl+P
     window.print();
   }, []);
 
@@ -34,13 +31,14 @@ const App: React.FC = () => {
             立即打印 / 保存 PDF
           </button>
           <span className="text-[10px] text-gray-400 italic">
-            提示：若按钮在预览模式下无反应，请按 <b>Ctrl + P</b> 打印
+            提示：若打印预览显示两页，请在打印设置中将“方向”设为 <b>横向</b>
           </span>
         </div>
       </header>
 
-      <main className="flex-1 overflow-visible">
-        <div className="print-container min-w-[1120px] mx-auto bg-white p-8 shadow-lg border border-gray-200">
+      <main className="flex-1 overflow-x-auto">
+        <div className="print-container mx-auto bg-white p-4 md:p-8 shadow-lg border border-gray-200"
+             style={{ width: 'fit-content' }}>
           
           <Legend />
 
@@ -49,7 +47,8 @@ const App: React.FC = () => {
                style={{ 
                  display: 'grid', 
                  gridTemplateColumns: 'repeat(18, minmax(0, 1fr))',
-                 gridAutoRows: 'minmax(4.6rem, auto)'
+                 gridAutoRows: 'minmax(4.2rem, auto)',
+                 width: '100%'
                }}>
             
             {ELEMENTS.map((element) => (
@@ -64,9 +63,9 @@ const App: React.FC = () => {
             ))}
 
             {/* Gap for Lanthanides/Actinides */}
-            <div className="h-6" style={{ gridRow: 8, gridColumn: '1 / span 18' }}></div>
+            <div className="h-4" style={{ gridRow: 8, gridColumn: '1 / span 18' }}></div>
 
-            {/* 镧系/锕系 标签 - 内部三行显示，靠右对齐 */}
+            {/* 镧系/锕系 标签 */}
             <div className="flex flex-col items-end justify-center pr-2 text-right border-r border-gray-300 mr-[0.5px] leading-none gap-0.5" 
                  style={{ gridRow: 9, gridColumn: 3 }}>
               <span className="text-[9px] font-bold text-gray-700">镧系 *</span>
@@ -82,7 +81,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <footer className="mt-8 text-center text-[10px] text-gray-400 border-t pt-4 italic">
+          <footer className="mt-6 text-center text-[10px] text-gray-400 border-t pt-4 italic">
             IUPAC Periodic Table of the Elements. Optimized for Professional A4 Landscape Printing.
           </footer>
         </div>
@@ -92,25 +91,38 @@ const App: React.FC = () => {
         @media print {
           @page {
             size: A4 landscape;
-            margin: 0;
+            margin: 5mm;
           }
           html, body {
-            height: auto;
-            overflow: visible !important;
+            width: 297mm;
+            height: 210mm;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
             background-color: white !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
+          #root {
+            width: 100%;
+          }
           .print-container {
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 10mm !important;
+            width: 280mm !important; /* 精确锁定 A4 横向宽度，预留边距 */
+            height: auto;
+            margin: 0 auto !important;
+            padding: 5mm !important;
             box-shadow: none !important;
             border: none !important;
-            min-width: auto !important;
+            min-width: 0 !important;
+            transform-origin: top left;
           }
           .no-print {
             display: none !important;
+          }
+          /* 强制不分页 */
+          .grid {
+            page-break-inside: avoid;
+            break-inside: avoid;
           }
         }
         .grid-cols-18 {
