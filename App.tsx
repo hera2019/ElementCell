@@ -31,25 +31,27 @@ const App: React.FC = () => {
             立即打印 / 保存 PDF
           </button>
           <span className="text-[10px] text-gray-400 italic">
-            提示：若打印预览显示多页，请确保方向设为 <b>横向</b>，边距设为 <b>无</b>
+            若预览仍为纵向，请在设置中手动寻找 <b>“方向：横向”</b>
           </span>
         </div>
       </header>
 
-      <main className="flex-1 overflow-x-auto">
-        {/* 增加 min-width 防止屏幕预览时塌陷 */}
+      <main className="flex-1 overflow-x-auto print:overflow-visible">
+        {/* 容器：屏幕预览时 minWidth 1100px，打印时锁定 280mm */}
         <div className="print-container mx-auto bg-white p-4 md:p-8 shadow-lg border border-gray-200"
-             style={{ width: 'fit-content', minWidth: '1100px' }}>
+             style={{ width: 'fit-content' }}>
           
           <Legend />
 
-          {/* 周期表网格 */}
-          <div className="grid-layout bg-white border border-black shadow-sm"
+          {/* 周期表网格：明确设置高度以防塌陷 */}
+          <div className="grid-layout bg-white border border-black"
                style={{ 
                  display: 'grid', 
                  gridTemplateColumns: 'repeat(18, minmax(0, 1fr))',
-                 gridAutoRows: 'minmax(4.5rem, auto)',
-                 width: '100%'
+                 // 11行：1(序号) + 7(主表) + 1(间隙) + 2(底表)
+                 gridTemplateRows: 'repeat(11, auto)',
+                 width: '100%',
+                 minWidth: '1050px' 
                }}>
             
             {/* Column Indices (Row 1) */}
@@ -65,73 +67,83 @@ const App: React.FC = () => {
               <ElementCell 
                 key={element.number} 
                 element={element} 
-                // 核心修复：所有元素下移一行，避免与序号重叠
                 rowOffset={1} 
               />
             ))}
 
             {/* Gap for Lanthanides/Actinides (Row 9) */}
-            <div className="h-4" style={{ gridRow: 9, gridColumn: '1 / span 18' }}></div>
+            <div style={{ gridRow: 9, gridColumn: '1 / span 18', height: '1.5rem' }}></div>
 
             {/* 镧系/锕系 标签 (Row 10, 11) */}
             <div className="flex flex-col items-end justify-center pr-2 text-right border-r border-gray-300 mr-[0.5px] leading-none gap-0.5" 
                  style={{ gridRow: 10, gridColumn: 3 }}>
               <span className="text-[9px] font-bold text-gray-700">镧系 *</span>
-              <span className="text-[7px] text-gray-500 italic">ランタノイド</span>
-              <span className="text-[7px] text-gray-400">Lanthanides</span>
+              <span className="text-[7px] text-gray-500 italic text-nowrap">ランタノイド</span>
+              <span className="text-[7px] text-gray-400 text-nowrap">Lanthanides</span>
             </div>
             
             <div className="flex flex-col items-end justify-center pr-2 text-right border-r border-gray-300 mr-[0.5px] leading-none gap-0.5" 
                  style={{ gridRow: 11, gridColumn: 3 }}>
               <span className="text-[9px] font-bold text-gray-700">锕系 **</span>
-              <span className="text-[7px] text-gray-500 italic">アクチノイド</span>
-              <span className="text-[7px] text-gray-400">Actinides</span>
+              <span className="text-[7px] text-gray-500 italic text-nowrap">アクチノイド</span>
+              <span className="text-[7px] text-gray-400 text-nowrap">Actinides</span>
             </div>
           </div>
 
           <footer className="mt-6 text-center text-[10px] text-gray-400 border-t pt-4 italic">
-            IUPAC Periodic Table of the Elements. Optimized for Professional A4 Landscape Printing.
+            IUPAC Periodic Table of the Elements. Optimized for A4 Landscape.
           </footer>
         </div>
       </main>
 
       <style>{`
+        /* 屏幕显示效果 */
         @media screen {
-          /* 屏幕上预览时保持一定的缩放，方便查看 */
           .print-container {
-            transform: scale(0.95);
-            transform-origin: top center;
+            min-width: 1100px;
           }
         }
+
+        /* 打印核心逻辑 */
         @media print {
           @page {
-            size: A4 landscape;
-            margin: 5mm;
+            size: landscape; /* 移除 A4 字样，增加兼容性，让浏览器重新显示方向开关 */
+            margin: 8mm;
           }
-          html, body {
-            width: 297mm;
-            height: 210mm;
+          
+          body {
+            background: white !important;
             margin: 0 !important;
             padding: 0 !important;
-            overflow: visible !important;
-            background-color: white !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
           }
+
+          .no-print {
+            display: none !important;
+          }
+
+          main {
+            overflow: visible !important;
+            display: block !important;
+          }
+
           .print-container {
-            width: 280mm !important; 
+            width: 280mm !important;
             min-width: 280mm !important;
-            height: auto;
             margin: 0 auto !important;
-            padding: 5mm !important;
+            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
             transform: none !important;
           }
-          .no-print {
-            display: none !important;
-          }
+
+          /* 强制表格显示高度 */
           .grid-layout {
+            display: grid !important;
+            min-height: 180mm !important; /* 强制网格拥有高度 */
+          }
+          
+          /* 防止跨页断裂 */
+          .print-container, .grid-layout {
             page-break-inside: avoid;
             break-inside: avoid;
           }
