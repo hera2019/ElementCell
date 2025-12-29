@@ -10,53 +10,54 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col p-4 md:p-8">
+    <div className="min-h-screen bg-gray-100 flex flex-col p-4 md:p-8 print:p-0 print:bg-white">
       {/* Header & Controls - Hidden on print */}
-      <header className="no-print flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <header className="no-print flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">专业级多语化学元素周期表</h1>
-          <p className="text-sm text-gray-600">
-            符合 A4 纸张打印比例 (横向) | 简体中文 · 日本語 · English
+          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">专业化学元素周期表</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            双语 Pinyin 对照 · A4 横向优化版
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-end gap-2">
           <button
             type="button"
             onClick={handlePrint}
-            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-all flex items-center gap-2 cursor-pointer"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-8 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clipRule="evenodd" />
             </svg>
-            立即打印 / 保存 PDF
+            打印本页 (A4 横向)
           </button>
-          <span className="text-[10px] text-gray-400 italic">
-            设置提示：<b>方向选择“横向”</b>，<b>边距选择“无”或“最小”</b>
-          </span>
+          <div className="flex flex-col items-end text-[10px] text-gray-400 font-medium">
+            <span>方向：<b>横向 (Landscape)</b></span>
+            <span>边距：<b>无 (None)</b></span>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-x-auto print:overflow-visible">
-        {/* 容器：打印时严格限制在 A4 横向范围内 */}
-        <div className="print-container mx-auto bg-white p-4 md:p-8 shadow-lg border border-gray-200 print:p-0 print:m-0 print:border-none print:shadow-none"
-             style={{ width: 'fit-content' }}>
+      <main className="flex-1 flex justify-center print:block">
+        {/* 核心打印容器 */}
+        <div className="print-area bg-white p-6 shadow-2xl border border-gray-200 print:p-0 print:m-0 print:border-none print:shadow-none">
           
           <Legend />
 
           {/* 周期表网格 */}
-          <div className="grid-layout bg-white border border-black"
+          <div className="grid-table bg-white border border-black"
                style={{ 
                  display: 'grid', 
                  gridTemplateColumns: 'repeat(18, minmax(0, 1fr))',
-                 gridTemplateRows: 'auto repeat(7, 1fr) 0.8rem repeat(2, 1fr)',
+                 // 明确 11 行的高度分配
+                 gridTemplateRows: '1.2rem repeat(7, 1fr) 0.5rem repeat(2, 1fr)',
                  width: '100%',
-                 minWidth: '1050px',
-                 minHeight: '550px' 
+                 minWidth: '1000px',
+                 minHeight: '520px' 
                }}>
             
-            {/* Column Indices (Row 1) */}
+            {/* Column Indices */}
             {[...Array(18)].map((_, i) => (
-              <div key={i} className="text-[10px] text-gray-400 font-bold text-center py-1 border-b border-gray-100 bg-gray-50/50 print:py-0 print:text-[8px]" 
+              <div key={i} className="text-[10px] text-gray-400 font-bold text-center flex items-center justify-center border-b border-gray-100 bg-gray-50/50 print:text-[8px] print:h-4" 
                    style={{ gridRow: 1, gridColumn: i + 1 }}>
                 {i + 1}
               </div>
@@ -71,73 +72,64 @@ const App: React.FC = () => {
               />
             ))}
 
-            {/* Gap (Row 9) */}
+            {/* Gap Row 9 */}
             <div style={{ gridRow: 9, gridColumn: '1 / span 18' }}></div>
 
-            {/* Labels (Row 10, 11) */}
-            <div className="flex flex-col items-end justify-center pr-2 text-right border-r border-gray-300 mr-[0.5px] leading-none gap-0.5 print:gap-0" 
+            {/* Labels Row 10, 11 */}
+            <div className="flex flex-col items-end justify-center pr-1 text-right border-r border-gray-300 mr-[0.5px] leading-none" 
                  style={{ gridRow: 10, gridColumn: 3 }}>
-              <span className="text-[9px] font-bold text-gray-700 print:text-[7px]">镧系 *</span>
-              <span className="text-[7px] text-gray-400 text-nowrap print:hidden">Lanthanides</span>
+              <span className="text-[8px] font-bold text-gray-700">镧系 *</span>
             </div>
             
-            <div className="flex flex-col items-end justify-center pr-2 text-right border-r border-gray-300 mr-[0.5px] leading-none gap-0.5 print:gap-0" 
+            <div className="flex flex-col items-end justify-center pr-1 text-right border-r border-gray-300 mr-[0.5px] leading-none" 
                  style={{ gridRow: 11, gridColumn: 3 }}>
-              <span className="text-[9px] font-bold text-gray-700 print:text-[7px]">锕系 **</span>
-              <span className="text-[7px] text-gray-400 text-nowrap print:hidden">Actinides</span>
+              <span className="text-[8px] font-bold text-gray-700">锕系 **</span>
             </div>
           </div>
-
-          <footer className="mt-4 text-center text-[10px] text-gray-400 border-t pt-2 italic print:mt-1 print:pt-1 print:text-[7px]">
-            IUPAC Periodic Table. Professional Edition.
-          </footer>
         </div>
       </main>
 
-      <style>{`
-        @media screen {
-          .print-container {
-            min-width: 1100px;
-          }
-        }
+      <footer className="no-print mt-8 text-center text-xs text-gray-400 pb-10">
+        Professional Chemistry Reference Tool. Follows IUPAC Standards.
+      </footer>
 
+      <style>{`
         @media print {
           @page {
-            size: auto; /* 允许手动选横向 */
-            margin: 8mm; /* 给一点页边距，防止某些打印机切边 */
+            size: landscape;
+            margin: 0; /* 彻底移除物理边距 */
           }
           
-          body {
-            background: white !important;
+          html, body {
+            height: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
           }
 
           .no-print {
             display: none !important;
           }
 
-          .print-container {
+          .print-area {
+            width: 297mm !important; /* A4 横向宽度 */
+            height: 210mm !important; /* A4 横向高度 */
+            padding: 10mm !important; /* 在容器内部留出 10mm 边距，比外部边距更稳定 */
+            display: flex !important;
+            flex-direction: column !important;
+            box-sizing: border-box !important;
+          }
+
+          .grid-table {
+            flex: 1 !important; /* 自动撑满剩余空间 */
             width: 100% !important;
-            max-width: 285mm !important; /* A4 横向是 297mm，扣除页边距 */
-            margin: 0 auto !important;
-            padding: 0 !important;
-            display: block !important;
+            min-height: 0 !important; /* 允许压缩 */
           }
 
-          /* 核心调整：减小最小高度，确保 Legend + Grid < 210mm */
-          .grid-layout {
-            display: grid !important;
-            min-height: 155mm !important; 
-            width: 100% !important;
-          }
-
-          /* 确保底部注记不会撑开新页 */
-          footer {
-            page-break-after: avoid;
-          }
-
-          .print-container, .grid-layout {
-            page-break-inside: avoid;
-            break-inside: avoid;
+          /* 防止任何元素产生第二页 */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>
